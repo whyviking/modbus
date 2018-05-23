@@ -51,8 +51,7 @@ void TaskPort2TX(void *p_arg);
 uint8_t InsertMap(uint8_t comid, uint8_t devaddr, uint8_t cmmd, uint16_t startaddr, uint16_t num)
 {
     Inquire_t *p      = 0x00;
-    uint8_t   *length = 0x00;
-    
+    uint8_t   *length = 0x00;    
     switch(comid)
     {
         case PORT_1_ADDR:
@@ -65,21 +64,17 @@ uint8_t InsertMap(uint8_t comid, uint8_t devaddr, uint8_t cmmd, uint16_t startad
             break; 
         default:
             break;
-    }
-    
+    }    
     if(p == 0x00)
     {
         return 0;
-    }
-    
+    }    
     p->addr      = devaddr;
     p->cmmd      = cmmd;
     p->startaddr = my_ltob(startaddr-1);
     p->num       = my_ltob(num);    
-    p->crc       = my_crccheck((uint8_t *)p, 6);
-    
-    (*length)++;
-    
+    p->crc       = my_crccheck((uint8_t *)p, 6);   
+    (*length)++;   
     return 0;
 }
 //  排序
@@ -89,7 +84,7 @@ void sequence_map (void )
 	  uint8_t i=0,j=0;
 	  while(Digital_map[j][0]>0)	     
 	  {
-	  			  j++;	  
+	  		j++;	  
 	  }
 	  for(;j>0;j--)
 	  {
@@ -105,8 +100,7 @@ void sequence_map (void )
 							Digital_map[i][2]=Digital_map[i+1][2];								 
 							Digital_map[i+1][0]=temp[0];
 							Digital_map[i+1][1]=temp[1];
-							Digital_map[i+1][2]=temp[2];
-						 
+							Digital_map[i+1][2]=temp[2];						 
 					 }		  		  
 				}		 
 	  }
@@ -114,25 +108,7 @@ void sequence_map (void )
 
 uint8_t OR_NUM(uint8_t j)
 {
-    uint8_t i=0;
-//	 if(Digital_map[j][0]==0)
-//	 {
-//	   return 0;
-//	 }	
-//	
-//	 while(Digital_map[i][0]>0)
-//	 {
-//	    if(Digital_map[j][1]==Digital_map[i][1]) 
-//			{
-//				DIGITAL_OR[j]++;
-//			}
-//	    i++;					
-//	 }
-//	 OR_NUM(j+1);
-//	 return 0;
-	
-	
-
+   uint8_t i=0;
 	 while(Digital_map[j][0]>0)
 	 {
 		 while(Digital_map[i][0]>0)
@@ -157,16 +133,8 @@ void CreatDataSourceTask(void)
 	uint8_t i = 0x00,port=0,j=0;
 	ups1_cmd_sem= OSSemCreate(0); 
   ups2_cmd_sem= OSSemCreate(0);
-	sequence_map(); 
-  OR_NUM(0);
-	 
-	
-	
-
-	 
-	 
-	 
-	 
+	sequence_map(); //排序	
+  OR_NUM(0);     //提区开关量或逻辑的个数
    i=0;
 	 while(Analog_map[i][0]>0)
 	 {
@@ -175,20 +143,12 @@ void CreatDataSourceTask(void)
 		 i++;
 	 }
 	 i=0;
-
 	 DIGITAL_addr[port][j]=Digital_map[i][0];  //每条命令的起始地址
 	 DIGITAL_addr_num[port][j]=i;             //起始的序号
-
-
-
-
-
 	 while(Digital_map[i][0]>0)
 	 {
-
 		  if(((Digital_map[i][0]-DIGITAL_addr[port][j])+1)<64 )
-		  {
-			
+		  {			
 		     DIGITAL_datanum[port][j]++;
 			   if(Digital_map[i+1][0]==0)
 			   {
@@ -205,8 +165,7 @@ void CreatDataSourceTask(void)
 		      j++;	
 			    DIGITAL_addr[port][j]=Digital_map[i][0];  //下一帧起始地址
 			    DIGITAL_addr_num[port][j]=i;		  	    //下一帧起始序号		  	     
-		  }	 	 
-	 	  	
+		  }	 	 	 	  	
 	 }
 	 port=1;
 	 i=0;
@@ -247,7 +206,7 @@ void CreatDataSourceTask(void)
 	 	 	
 	 }
 
-     OSTimeDlyHMSM(0, 0, 0, 50);
+    OSTimeDlyHMSM(0, 0, 0, 50);
 
 
 
@@ -605,44 +564,44 @@ uint8_t GetAnalogData(uint16_t *dst)
     return 0;
 }
 
-//uint8_t GetDigitalData(uint8_t *dst)
-//{
-//    uint8_t i = 0;
-//    for(i=0; i<3; i++)
-//    {
-//        dst[i] = Digital_Buff[0][i];
-//    }
-//    for(i=3; i<6; i++)
-//    {
-//        dst[i] = Digital_Buff[1][i-3];
-//    }
-//    
-//    return 0;
-//}
-// 合肥1 特别版  36开关量
 uint8_t GetDigitalData(uint8_t *dst)
 {
     uint8_t i = 0;
-
-
     for(i=0; i<3; i++)
     {
         dst[i] = Digital_Buff[0][i];
     }
-		dst[3]=0;
-		dst[4]=0x00;
-		dst[5]=0x00;
-		dst[6]=0x00;
-		dst[7]=0x00;
-		dst[4]|=(Digital_Buff[1][0]<<4);  //36位开始		
-		dst[5]|=(Digital_Buff[1][0]>>4);
-	  dst[5]|=(Digital_Buff[1][1]<<4);	
-	  dst[6]|=(Digital_Buff[1][1]>>4);			
-	  dst[6]|=(Digital_Buff[1][2]<<4);			
-    dst[7]|=(Digital_Buff[1][2]>>4);	
+    for(i=3; i<6; i++)
+    {
+        dst[i] = Digital_Buff[1][i-3];
+    }
     
     return 0;
 }
+// 合肥1 特别版  36开关量
+//uint8_t GetDigitalData(uint8_t *dst)
+//{
+//    uint8_t i = 0;
+
+
+//    for(i=0; i<3; i++)
+//    {
+//        dst[i] = Digital_Buff[0][i];
+//    }
+//		dst[3]=0;
+//		dst[4]=0x00;
+//		dst[5]=0x00;
+//		dst[6]=0x00;
+//		dst[7]=0x00;
+//		dst[4]|=(Digital_Buff[1][0]<<4);  //36位开始		
+//		dst[5]|=(Digital_Buff[1][0]>>4);
+//	  dst[5]|=(Digital_Buff[1][1]<<4);	
+//	  dst[6]|=(Digital_Buff[1][1]>>4);			
+//	  dst[6]|=(Digital_Buff[1][2]<<4);			
+//    dst[7]|=(Digital_Buff[1][2]>>4);	
+//    
+//    return 0;
+//}
 
 
 
